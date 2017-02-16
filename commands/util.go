@@ -205,6 +205,9 @@ func scanVulnByCpeNames(cpeNames []string, scannedVulns []models.VulnInfo) ([]mo
 				set[detail.CveID] = models.VulnInfo{
 					CveID:    detail.CveID,
 					CpeNames: []string{name},
+					// Avoid null slice being null in JSON
+					Packages:         models.PackageInfoList{},
+					DistroAdvisories: []models.DistroAdvisory{},
 				}
 			}
 		}

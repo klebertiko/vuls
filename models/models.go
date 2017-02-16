@@ -92,9 +92,7 @@ func (r ScanResult) FillCveDetail() (ScanResult, error) {
 		return r, err
 	}
 
-	icves := config.Conf.Servers[r.ServerName].IgnoreCves
-
-	var known, unknown, ignored CveInfos
+	known, unknown, ignored := CveInfos{}, CveInfos{}, CveInfos{}
 	for _, d := range ds {
 		cinfo := CveInfo{
 			CveDetail: d,
@@ -103,7 +101,7 @@ func (r ScanResult) FillCveDetail() (ScanResult, error) {
 
 		// ignored
 		found := false
-		for _, icve := range icves {
+		for _, icve := range config.Conf.Servers[r.ServerName].IgnoreCves {
 			if icve == d.CveID {
 				ignored = append(ignored, cinfo)
 				found = true
@@ -116,6 +114,11 @@ func (r ScanResult) FillCveDetail() (ScanResult, error) {
 
 		// unknown
 		if d.CvssScore(config.Conf.Lang) <= 0 {
+			// Avoid null slice being null in JSON
+			cinfo.CveDetail.Nvd.Cpes = []cve.Cpe{}
+			cinfo.CveDetail.Nvd.References = []cve.Reference{}
+			cinfo.CveDetail.Jvn.Cpes = []cve.Cpe{}
+			cinfo.CveDetail.Jvn.References = []cve.Reference{}
 			unknown = append(unknown, cinfo)
 			continue
 		}
